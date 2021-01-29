@@ -5,20 +5,11 @@ import com.ttcsolutions.studentmanager.services.validators.StudentValidator;
 import java.time.LocalDate;
 
 public class StudentIn {
-    private int id;
     private String name;
     private LocalDate birthday;
     private String address;
     private String phone;
     private int classId;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;

@@ -1,8 +1,7 @@
 package com.ttcsolutions.studentmanager.services.impl;
 
-import com.ttcsolutions.studentmanager.exceptions.EmptyException;
-import com.ttcsolutions.studentmanager.exceptions.NullException;
-import com.ttcsolutions.studentmanager.exceptions.ResourceNotFoundException;
+import com.ttcsolutions.studentmanager.exceptions.SystemResponse;
+import com.ttcsolutions.studentmanager.exceptions.Response;
 import com.ttcsolutions.studentmanager.models.entities.ClassEntity;
 import com.ttcsolutions.studentmanager.models.entities.StudentEntity;
 import com.ttcsolutions.studentmanager.models.in.StudentIn;
@@ -12,54 +11,72 @@ import com.ttcsolutions.studentmanager.repositories.StudentRepository;
 import com.ttcsolutions.studentmanager.services.StudentService;
 import com.ttcsolutions.studentmanager.services.mappers.StudentMapper;
 import com.ttcsolutions.studentmanager.services.validators.StudentValidator;
+import com.ttcsolutions.studentmanager.utils.StringResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class StudentServiceImpl implements StudentService {
-    private final StudentMapper studentMapper = new StudentMapper();
-    private final StudentValidator studentValidator = new StudentValidator();
+    @Autowired
+    private StudentMapper studentMapper;
+
+    @Autowired
+    private StudentValidator studentValidator;
 
     @Autowired
     private StudentRepository studentRepository;
+
     @Autowired
     private ClassRepository classRepository;
 
     @Override
-    public List<StudentDTO> getAll() {
-        return studentMapper.mapStudentEntitiesToStudentDTOS(studentRepository.findAll());
+    public ResponseEntity<SystemResponse<List<StudentDTO>>> getAll() {
+        List<StudentDTO> studentDTOS = studentMapper.toDTOs(studentRepository.findAll());
+        return Response.ok(studentDTOS);
     }
 
     @Override
-    public StudentDTO create(StudentIn studentIn) throws EmptyException, ResourceNotFoundException, NullException {
+    public ResponseEntity<SystemResponse<StudentDTO>> create(StudentIn studentIn) {
         ClassEntity classEntity = classRepository.findById(studentIn.getClassId()).orElse(null);
-        studentValidator.validate(studentIn, classEntity);
+        ResponseEntity<SystemResponse<StudentDTO>> validate = studentValidator.validate(studentIn, classEntity);
+        if (!validate.getStatusCode().is2xxSuccessful()) {
+            return validate;
+        }
+        StudentEntity studentEntity = studentMapper.toEntity(studentIn, classEntity);
+        studentEntity = studentRepository.save(studentEntity);
 
-        StudentEntity studentEntity = studentMapper.mapStudentInToStudentEntity(studentIn, classEntity);
-        return studentMapper.mapStudentEntityToStudentDTO(studentRepository.save(studentEntity));
+        StudentDTO studentDTO = studentMapper.toDTO(studentEntity);
+        return Response.ok(studentDTO);
     }
 
     @Override
-    public StudentDTO edit(int id, StudentIn studentIn) throws ResourceNotFoundException, EmptyException, NullException {
-        ClassEntity classEntity = classRepository.findById(studentIn.getClassId()).orElse(null);
-        studentValidator.validate(studentIn, classEntity);
-
-        StudentEntity studentEntityInDB = studentRepository.findById(id).orElse(null);
-        if (studentEntityInDB == null)
-            throw new ResourceNotFoundException("Student not found with id = " + id);
-
-        studentIn.setId(id);
-        StudentEntity studentEntity = studentMapper.mapStudentInToStudentEntity(studentIn, classEntity);
-        return studentMapper.mapStudentEntityToStudentDTO(studentRepository.save(studentEntity));
-    }
-
-    @Override
-    public void delete(int id) throws ResourceNotFoundException {
+    public ResponseEntity<SystemResponse<StudentDTO>> edit(int id, StudentIn studentIn) {
         StudentEntity studentEntity = studentRepository.findById(id).orElse(null);
         if (studentEntity == null)
-            throw new ResourceNotFoundException("Student not found with id = " + id);
+            return Response.badRequest(StringResponses.STUDENT_NOT_FOUND + id);
+
+        ClassEntity classEntity = classRepository.findById(studentIn.getClassId()).orElse(null);
+        ResponseEntity<SystemResponse<StudentDTO>> validate = studentValidator.validate(studentIn, classEntity);
+        if (!validate.getStatusCode().is2xxSuccessful()) {
+            return validate;
+        }
+
+        studentEntity = studentMapper.toEntity(id, studentIn, classEntity);
+        studentEntity = studentRepository.save(studentEntity);
+
+        StudentDTO studentDTO = studentMapper.toDTO(studentEntity);
+        return Response.ok(studentDTO);
+    }
+
+    @Override
+    public ResponseEntity<SystemResponse<StudentDTO>> delete(int id) {
+        StudentEntity studentEntity = studentRepository.findById(id).orElse(null);
+        if (studentEntity == null)
+            return Response.badRequest(StringResponses.STUDENT_NOT_FOUND);
         studentRepository.delete(studentEntity);
+        return Response.ok();
     }
 }

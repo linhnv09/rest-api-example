@@ -1,8 +1,6 @@
 package com.ttcsolutions.studentmanager.controllers;
 
-import com.ttcsolutions.studentmanager.exceptions.EmptyException;
-import com.ttcsolutions.studentmanager.exceptions.NullException;
-import com.ttcsolutions.studentmanager.exceptions.ResourceNotFoundException;
+import com.ttcsolutions.studentmanager.exceptions.SystemResponse;
 import com.ttcsolutions.studentmanager.models.in.StudentIn;
 import com.ttcsolutions.studentmanager.models.out.StudentDTO;
 import com.ttcsolutions.studentmanager.services.StudentService;
@@ -19,23 +17,21 @@ public class StudentController {
     private StudentService studentService;
 
     @GetMapping
-    public ResponseEntity<List<StudentDTO>> getAll() {
-        return ResponseEntity.ok(studentService.getAll());
+    public ResponseEntity<SystemResponse<List<StudentDTO>>> getAll() {
+        return studentService.getAll();
     }
 
     @PostMapping
-    public ResponseEntity<StudentDTO> create(@RequestBody StudentIn studentIn) throws EmptyException, ResourceNotFoundException, NullException {
-        return ResponseEntity.ok(studentService.create(studentIn));
+    public ResponseEntity<SystemResponse<StudentDTO>> create(@RequestBody StudentIn studentIn) {
+        return studentService.create(studentIn);
     }
-
     @PutMapping("/{id}")
-    public ResponseEntity<StudentDTO> edit(@PathVariable("id") int id, @RequestBody StudentIn studentIn) throws EmptyException, ResourceNotFoundException, NullException {
-        return ResponseEntity.ok(studentService.edit(id, studentIn));
+    public ResponseEntity<SystemResponse<StudentDTO>> edit(@PathVariable("id") int id, @RequestBody StudentIn studentIn) {
+        return studentService.edit(id, studentIn);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable("id") int id) throws ResourceNotFoundException {
-        studentService.delete(id);
-        return ResponseEntity.ok("SUCCESS !");
+    public ResponseEntity<SystemResponse<StudentDTO>> delete(@PathVariable("id") int id) {
+        return studentService.delete(id);
     }
 }

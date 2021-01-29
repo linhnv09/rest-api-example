@@ -5,13 +5,15 @@ import com.ttcsolutions.studentmanager.models.entities.StudentEntity;
 import com.ttcsolutions.studentmanager.models.in.StudentIn;
 import com.ttcsolutions.studentmanager.models.out.ClassDTO;
 import com.ttcsolutions.studentmanager.models.out.StudentDTO;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class StudentMapper {
 
-    public List<StudentDTO> mapStudentEntitiesToStudentDTOS(List<StudentEntity> studentEntities){
+    public List<StudentDTO> toDTOs(List<StudentEntity> studentEntities) {
         return studentEntities.stream()
                 .map(s -> {
                     StudentDTO studentDTO = new StudentDTO();
@@ -21,7 +23,7 @@ public class StudentMapper {
                     studentDTO.setAddress(s.getAddress());
                     studentDTO.setBirthday(s.getBirthday());
                     ClassDTO classDTO = null;
-                    if(s.getClassEntity() != null){
+                    if (s.getClassEntity() != null) {
                         classDTO = new ClassDTO();
                         classDTO.setId(s.getClassEntity().getId());
                         classDTO.setName(s.getClassEntity().getName());
@@ -31,9 +33,8 @@ public class StudentMapper {
                 }).collect(Collectors.toList());
     }
 
-    public StudentEntity mapStudentInToStudentEntity(StudentIn studentIn, ClassEntity classEntity) {
+    public StudentEntity toEntity(StudentIn studentIn, ClassEntity classEntity) {
         StudentEntity studentEntity = new StudentEntity();
-        studentEntity.setId(studentIn.getId());
         studentEntity.setName(studentIn.getName());
         studentEntity.setAddress(studentIn.getAddress());
         studentEntity.setBirthday(studentIn.getBirthday());
@@ -42,7 +43,18 @@ public class StudentMapper {
         return studentEntity;
     }
 
-    public StudentDTO mapStudentEntityToStudentDTO(StudentEntity studentEntity) {
+    public StudentEntity toEntity(int id, StudentIn studentIn, ClassEntity classEntity) {
+        StudentEntity studentEntity = new StudentEntity();
+        studentEntity.setId(id);
+        studentEntity.setName(studentIn.getName());
+        studentEntity.setAddress(studentIn.getAddress());
+        studentEntity.setBirthday(studentIn.getBirthday());
+        studentEntity.setPhone(studentIn.getPhone());
+        studentEntity.setClassEntity(classEntity);
+        return studentEntity;
+    }
+
+    public StudentDTO toDTO(StudentEntity studentEntity) {
         StudentDTO studentDTO = new StudentDTO();
         studentDTO.setId(studentEntity.getId());
         studentDTO.setName(studentEntity.getName());

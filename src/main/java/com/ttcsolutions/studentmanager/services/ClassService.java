@@ -1,22 +1,21 @@
 package com.ttcsolutions.studentmanager.services;
 
-import com.ttcsolutions.studentmanager.exceptions.EmptyException;
-import com.ttcsolutions.studentmanager.exceptions.NullException;
-import com.ttcsolutions.studentmanager.exceptions.ResourceNotFoundException;
+import com.ttcsolutions.studentmanager.exceptions.*;
 import com.ttcsolutions.studentmanager.models.in.ClassIn;
 import com.ttcsolutions.studentmanager.models.out.ClassDTO;
-import com.ttcsolutions.studentmanager.models.out.StudentByClass;
+import com.ttcsolutions.studentmanager.models.out.StudentDTO;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
 public interface ClassService {
-    List<ClassDTO> getAll();
+    ResponseEntity<SystemResponse<List<ClassDTO>>> getAll();
 
-    ClassDTO create(ClassIn classIn) throws Exception;
+    ResponseEntity<SystemResponse<ClassDTO>> create(ClassIn classIn);
 
-    ClassDTO edit(int id, ClassIn classIn) throws ResourceNotFoundException, EmptyException, NullException;
+    ResponseEntity<SystemResponse<ClassDTO>> edit(int id, ClassIn classIn);
 
-    String delete(int id) throws ResourceNotFoundException;
+    ResponseEntity<SystemResponse<ClassDTO>> delete(int id);
 
-    StudentByClass getStudentsByClassId(int id) throws ResourceNotFoundException;
+    ResponseEntity<SystemResponse<List<StudentDTO>>> getAllStudentsByClass(int id);
 }
